@@ -8,18 +8,43 @@ module.exports = class Service {
   }
 
   static async dataSave(req, res) {
-    const phoneNumber = req.body.phoneNumber;
+    let phoneNumber = req.body.phoneNumber;
+    phoneNumber = phoneNumber.replace(/[ÀÁÂÃÄÅ]/g, 'A');
+    phoneNumber = phoneNumber.replace(/[àáâãäå]/g, 'a');
+    phoneNumber = phoneNumber.replace(/[ÈÉÊË]/g, 'E');
+    phoneNumber = phoneNumber.replace(/[^a-z0-9]/gi, '');
+
+    const countryNumber = req.body.country;
     if (req.body.phoneNumber !== phoneNumber) {
       res.status(400).json({ error: 'Invalid' });
     }
-    const number = phoneUtil.parseAndKeepRawInput(phoneNumber, 'BR');
-    const dataPhone = {
-      dddi_country: number.getCountryCode(),
-      original_phone: number.getNationalNumber(),
-      bb: phoneUtil.isPossibleNumber(number),
-      format_national: phoneUtil.format(number, PNF.NATIONAL),
-      format_international: phoneUtil.format(number, PNF.INTERNATIONAL),
-    };
-    res.status(200).json({ message: dataPhone });
+    const number = phoneUtil.parseAndKeepRawInput(phoneNumber, countryNumber);
+    // console.log(countryNumber);
+    try {
+      const dataPhone = {
+        nation: phoneUtil.getRegionCodeForNumber(number),
+        is_valid: phoneUtil.isValidNumberForRegion(number, countryNumber),
+        dddi_country: number.getCountryCode(),
+        original_phone: number.getNationalNumber(),
+        format_national: phoneUtil.format(number, PNF.NATIONAL),
+        format_international: phoneUtil.format(number, PNF.INTERNATIONAL),
+      };
+      if (phoneUtil.isValidNumberForRegion(number, countryNumber) == false) {
+        console.log({ error: 'does not have a ninth or invalid digit' });
+        return res
+          .status(400)
+          .json({ error: 'does not have a ninth or invalid digit' });
+      }
+      if (dataPhone.nation === 'BR') {
+        if (dataPhone.format_national.length < 15) {
+          console.log({ error: 'Invalid national number' });
+          return res.status(400).json({ message: 'number invalid' });
+        }
+      }
+      console.log(dataPhone);
+      res.status(200).json({ message: dataPhone });
+    } catch (error) {
+      return console.log(`🔥 ${error}`);
+    }
   }
 };
