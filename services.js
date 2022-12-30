@@ -8,18 +8,18 @@ module.exports = class Service {
   }
 
   static async dataSave(req, res) {
+    const countryNumber = req.body.country;
+    if (!req.body.phoneNumber) {
+      console.log({ error: 'Need a number valid' });
+      return res.status(400).json({ error: 'Need a number valid' });
+    }
     let phoneNumber = req.body.phoneNumber;
     phoneNumber = phoneNumber.replace(/[ÀÁÂÃÄÅ]/g, 'A');
     phoneNumber = phoneNumber.replace(/[àáâãäå]/g, 'a');
     phoneNumber = phoneNumber.replace(/[ÈÉÊË]/g, 'E');
     phoneNumber = phoneNumber.replace(/[^a-z0-9]/gi, '');
 
-    const countryNumber = req.body.country;
-    if (req.body.phoneNumber !== phoneNumber) {
-      res.status(400).json({ error: 'Invalid' });
-    }
     const number = phoneUtil.parseAndKeepRawInput(phoneNumber, countryNumber);
-    // console.log(countryNumber);
     try {
       const dataPhone = {
         nation: phoneUtil.getRegionCodeForNumber(number),
