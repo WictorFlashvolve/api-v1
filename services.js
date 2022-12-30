@@ -8,11 +8,6 @@ module.exports = class Service {
   }
 
   static async dataSave(req, res) {
-    // const { dddi, ddd, number } = req.body;
-    // if (dddi == '' || ddd == '' || number == '') {
-    //   console.log({ error: 'Invalid fields or empty' });
-    //   return res.status(400).json({ error: 'Invalid fields or empty' });
-    // }
     const phoneNumber = req.body.phoneNumber;
     if (req.body.phoneNumber !== phoneNumber) {
       res.status(400).json({ error: 'Invalid' });
@@ -26,9 +21,5 @@ module.exports = class Service {
       format_international: phoneUtil.format(number, PNF.INTERNATIONAL),
     };
     res.status(200).json({ message: dataPhone });
-
-    // const phoneNumber = `${dddi}-${ddd}-${number}`;
-    // console.log({ message: 'success' });
-    // res.status(201).json({ message: 'success' });
   }
 };
